@@ -60,6 +60,14 @@ bool InternalGetFullPathName(const StringPiece& file_name, std::string* path,
     path->clear();
     return false;
   }
+  // The size query can overestimate (e.g. for a leading ".."), so trim to the
+  // length actually written; otherwise the padding leaks out as NUL bytes.
+  if (wide_full_size2 >= wide_full_size) {
+    *err = "GetFullPathNameW(" + filename_str + "): path changed while resolving";
+    path->clear();
+    return false;
+  }
+  wide_path.resize(static_cast<size_t>(wide_full_size2));
 
   // Convert wide_path to Unicode.
   return ConvertWin32UnicodeToUTF8(wide_path, path, err);

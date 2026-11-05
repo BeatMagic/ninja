@@ -72,6 +72,17 @@ TEST(IncludesNormalize, WithRelative) {
   EXPECT_EQ(".", NormalizeRelativeAndCheckNoError("a", "a"));
 }
 
+TEST(IncludesNormalize, LeadingParentHasNoEmbeddedNul) {
+  std::string err;
+  std::string abs = IncludesNormalize::AbsPath("..\\x.h", &err);
+  EXPECT_EQ("", err);
+  EXPECT_EQ(std::string::npos, abs.find('\0'));
+
+  std::string normalized = NormalizeAndCheckNoError("..\\x.h");
+  EXPECT_EQ(std::string::npos, normalized.find('\0'));
+  EXPECT_EQ("../x.h", normalized);
+}
+
 TEST(IncludesNormalize, Case) {
   EXPECT_EQ("b", NormalizeAndCheckNoError("Abc\\..\\b"));
   EXPECT_EQ("BdEf", NormalizeAndCheckNoError("Abc\\..\\BdEf"));
